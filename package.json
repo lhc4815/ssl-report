@@ -2,10 +2,19 @@
   "name": "ssl-report-v2",
   "version": "2.0.0",
   "description": "SSL 고교선택적성검사 리포트 시스템",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "node local-server/server_improved.js",
+    "start": "node local-server/server_improved.js"
+  },
   "dependencies": {
     "mysql2": "^3.6.0"
   },
   "keywords": ["ssl", "report", "education", "aptitude", "test"],
   "author": "SSL Team",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
 }
