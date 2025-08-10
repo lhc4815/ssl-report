@@ -15,6 +15,6 @@
   "author": "SSL Team",
   "license": "MIT",
   "engines": {
-    "node": ">=14.0.0"
+    "node": "18.x"
   }
 }
