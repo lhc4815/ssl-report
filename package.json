@@ -5,14 +5,11 @@
   "main": "index.html",
   "type": "module",
   "scripts": {
-    "dev": "node server_improved.js",
-    "start": "node server_improved.js",
-    "build": "echo 'No build required for static files'"
+    "dev": "node local-server/server_improved.js",
+    "start": "node local-server/server_improved.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "mysql2": "^3.6.0",
-    "cors": "^2.8.5"
+    "mysql2": "^3.6.0"
   },
   "keywords": ["ssl", "report", "education", "aptitude", "test"],
   "author": "SSL Team",
