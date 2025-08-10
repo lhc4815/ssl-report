@@ -49,6 +49,7 @@ export default async function handler(req, res) {
                 r.desired_high_school,
                 r.student_phone,
                 r.parent_phone,
+                r.test_completed,
                 ua.test_completed_at,
                 r.자기조절능력,
                 r.서류형인재_성향,
@@ -85,6 +86,16 @@ export default async function handler(req, res) {
             console.log(`❌ 학생을 찾을 수 없음: ${userCode}`);
             return res.status(404).json({ 
                 error: 'Student not found', 
+                userCode: userCode 
+            });
+        }
+        
+        // Check if test is completed
+        if (rows[0].test_completed === 0) {
+            console.log(`⚠️ 학생 검사 미완료: ${userCode}`);
+            return res.status(403).json({ 
+                error: 'Test not completed', 
+                message: '아직 검사를 완료하지 않은 학생입니다.',
                 userCode: userCode 
             });
         }

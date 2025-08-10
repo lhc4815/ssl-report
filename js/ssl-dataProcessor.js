@@ -161,9 +161,9 @@ function processMySQLData(mysqlData) {
     const xAxis = (extracurricularScore - academicScore) / SCALING_FACTOR; // 종합형(+) vs 교과형(-)
     const yAxis = (documentScore - interviewScore) / SCALING_FACTOR;       // 서류형(+) vs 면접형(-)
     
-    // 3. 학업성취도 데이터 (typeB, typeC 점수 활용)
-    const englishScore = mysqlData.typeB_score || 0;
-    const mathScore = mysqlData.typeC_score || 0;
+    // 3. 학업성취도 데이터 (typeB, typeC 점수 활용) - NULL 처리 개선
+    const englishScore = mysqlData.typeB_score ?? 0;  // nullish coalescing operator 사용
+    const mathScore = mysqlData.typeC_score ?? 0;     // null, undefined만 0으로 처리
     
     // 학업성취도 Z-점수 계산 (사용자 지정 통계 적용)
     const englishZScore = calculateZScore(englishScore, 25, 8); // Type B: 평균 25, 표준편차 8

@@ -1329,7 +1329,19 @@
                 .catch(error => {
                     loadingDiv.style.display = 'none';
                     errorDiv.style.display = 'block';
-                    errorDiv.innerText = error.message || '학생 정보를 찾을 수 없습니다.';
+                    
+                    // 403 에러 (검사 미완료) 처리
+                    if (error.message && error.message.includes('403')) {
+                        errorDiv.innerHTML = `
+                            <div style="text-align: center; padding: 40px;">
+                                <h2 style="color: #dc3545; margin-bottom: 20px;">⚠️ 검사 미완료</h2>
+                                <p style="font-size: 18px; margin-bottom: 30px;">이 학생은 아직 검사를 완료하지 않았습니다.</p>
+                                <a href="index.html" style="padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 6px;">목록으로 돌아가기</a>
+                            </div>
+                        `;
+                    } else {
+                        errorDiv.innerText = error.message || '학생 정보를 찾을 수 없습니다.';
+                    }
                     console.error('❌ 데이터 로드 오류:', error);
                 });
         }

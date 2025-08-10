@@ -26,14 +26,16 @@ export default async function handler(req, res) {
             database: process.env.DB_NAME
         });
         
-        // Query to get student list without duplicates
+        // Query to get student list without duplicates (only completed tests)
         const query = `
             SELECT DISTINCT
                 user_code, 
                 MAX(user_name) as user_name, 
                 MAX(school) as school, 
-                MAX(grade) as grade
+                MAX(grade) as grade,
+                MAX(test_completed) as test_completed
             FROM report_v1 
+            WHERE test_completed = 1
             GROUP BY user_code
             ORDER BY user_code
             LIMIT 100
