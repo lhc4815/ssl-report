@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSL 고교선택적성검사 결과</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <link rel="stylesheet" href="css/report.css">
+    <style>
+        /* 전문적이고 신뢰감 있는 의료/교육 분야 디자인 */
+        @page {
+            margin: 20mm;
+            size: A4;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background-color: #f8f9fa;
+            font-size: 14px;
+        }
+
+        .report-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+            min-height: 100vh;
+        }
+
+        /* 헤더 영역 */
+        .report-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .report-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+            opacity: 0.1;
+        }
+
+        .report-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .report-subtitle {
+            font-size: 16px;
+            font-weight: 300;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 컨트롤 버튼 영역 */
+        .control-section {
+            padding: 20px 30px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .pdf-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 24px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            gap: 8px;
+        }
+
+        .pdf-button:hover {
+            background-color: #c82333;
+            transform: translateY(-1px);
+        }
+
+        /* 메인 컨텐츠 영역 */
+        .report-content {
+            padding: 30px;
+        }
+
+        /* 로딩 및 에러 */
+        #loading, #error {
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+
+        #loading {
+            color: #6c757d;
+        }
+
+        #error {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        /* 학생 정보 섹션 */
+        .student-info {
+            display: flex; /* Flexbox로 변경 */
+            flex-wrap: wrap; /* 한 줄로 배치 */
+            justify-content: space-around; /* 항목 간 간격 균등 분배 */
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px; /* 패딩 조정 */
+            margin-bottom: 25px; /* 마진 조정 */
+        }
+
+        .student-info-item {
+            flex: 1 1 22%; /* 4개 항목이 한 줄에 오도록 너비 조정 */
+            max-width: 24%; /* 최대 너비 설정 */
+            margin: 5px 5px; /* 항목 간 마진 조정 */
+            display: flex;
+            flex-direction: row; /* 가로 배치 */
+            align-items: center; /* 세로 중앙 정렬 */
+            gap: 6px; /* 라벨과 값 사이 간격 */
+        }
+
+        .student-info-item strong {
+            font-weight: 600;
+            color: #495057;
+            font-size: 12px; /* 폰트 크기 조정 */
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap; /* 라벨이 줄바꿈되지 않도록 */
+        }
+
+        .student-info-item span {
+            font-size: 14px; /* 폰트 크기 조정 */
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        /* 섹션 헤더 */
+        .section-header {
+            margin: 35px 0 15px 0; /* 마진 조정 */
+            padding-bottom: 8px; /* 패딩 조정 */
+            border-bottom: 3px solid #1e3c72;
+            position: relative;
+        }
+
+        .section-header h2 {
+            font-size: 20px; /* 폰트 크기 조정 */
+            font-weight: 700;
+            color: #1e3c72;
+            margin: 0;
+            page-break-after: avoid; /* 제목 뒤에 페이지 나누기 방지 */
+        }
+
+        .section-header::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 40px; /* 강조선 길이 조정 */
+            height: 3px;
+            background-color: #dc3545;
+        }
+
+        /* 차트 컨테이너 */
+        .chart-container {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px; /* 패딩 조정 */
+            margin-bottom: 20px; /* 마진 조정 */
+            height: 400px; /* 높이 조정 */
+            position: relative;
+        }
+
+        .radar-chart-container {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px; /* 패딩 조정 */
+            margin-bottom: 20px; /* 마진 조정 */
+            height: 500px; /* 높이 조정 */
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .normal-dist-charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* 최소 너비 조정 */
+            gap: 12px; /* 간격 조정 */
+            margin-bottom: 20px; /* 마진 조정 */
+        }
+
+        .normal-chart-container {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px; /* 패딩 조정 */
+            height: 220px; /* 높이 조정 */
+            position: relative;
+        }
+
+        /* 데이터 테이블 */
+        .scale-data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px; /* 마진 조정 */
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .scale-data-table th {
+            background-color: #1e3c72;
+            color: white;
+            font-weight: 600;
+            padding: 15px 12px;
+            text-align: center;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .scale-data-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+
+        .scale-data-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .scale-data-table tbody tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* 추천 및 전략 섹션 */
+        .recommendation-container, .strategy-container {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .recommendation-details {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #1e3c72;
+        }
+
+        .recommendation-details h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #1e3c72;
+            font-weight: 600;
+        }
+
+        .recommendation-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendation-list li {
+            padding: 8px 0;
+            border-bottom: 1px dotted #dee2e6;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .recommendation-list li:last-child {
+            border-bottom: none;
+        }
+
+        .recommendation-list strong {
+            color: #495057;
+            font-weight: 600;
+        }
+
+        /* 전략 상세 내용 */
+        .strategy-detail {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .strategy-detail h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .strategy-detail p {
+            line-height: 1.6;
+            margin: 0;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        /* 스펙트럼 영역 */
+        .spectrum-container {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+        }
+
+        .spectrum-item {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .spectrum-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .spectrum-bar {
+            height: 40px;
+            background: linear-gradient(to right, #1e3c72, #f8f9fa);
+            border-radius: 4px;
+            margin-bottom: 10px;
+            position: relative;
+            border: 1px solid #dee2e6;
+        }
+
+        .spectrum-arrow {
+            position: absolute;
+            top: -25px;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .spectrum-arrow-icon {
+            color: #dc3545;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .spectrum-arrow-text {
+            color: #dc3545;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .spectrum-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+
+        .spectrum-labels div {
+            font-weight: 600;
+            font-size: 13px;
+            color: #495057;
+        }
+
+        .spectrum-description {
+            margin-top: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #6c757d;
+        }
+
+        /* 푸터 노트 */
+        .footer-note {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .report-container {
+                margin: 0;
+                box-shadow: none;
+            }
+            
+            .report-header {
+                padding: 30px 20px;
+            }
+            
+            .report-title {
+                font-size: 24px;
+            }
+            
+            .control-section {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .report-content {
+                padding: 20px;
+            }
+            
+            .student-info {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 20px;
+            }
+            
+            .normal-dist-charts {
+                grid-template-columns: 1fr;
+            }
+            
+            .scale-data-table {
+                font-size: 12px;
+            }
+            
+            .scale-data-table th,
+            .scale-data-table td {
+                padding: 8px 4px;
+            }
+            
+            .radar-chart-container {
+                height: 400px;
+                padding: 15px;
+            }
+            
+            .chart-container {
+                height: 350px;
+                padding: 15px;
+            }
+        }
+
+        /* 프린트/PDF용 스타일 최적화 */
+        @media print {
+            @page {
+                size: A4;
+                margin: 12mm 10mm;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            
+            body {
+                background-color: white !important;
+                font-size: 10px !important;
+                line-height: 1.3 !important;
+                color: #000 !important;
+            }
+            
+            .control-section {
+                display: none !important;
+            }
+            
+            .report-container {
+                box-shadow: none !important;
+                max-width: none !important;
+                margin: 0 !important;
+                background: white !important;
+            }
+            
+            /* 헤더 최적화 - 크기 더욱 증가 */
+            .report-header {
+                background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color: white !important;
+                padding: 35px 25px !important;
+                margin-bottom: 20px !important;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+            }
+            
+            .report-title {
+                font-size: 28px !important;
+                margin-bottom: 10px !important;
+                font-weight: 700 !important;
+            }
+            
+            .report-subtitle {
+                font-size: 16px !important;
+                opacity: 0.9 !important;
+            }
+            
+            .report-content {
+                padding: 10px !important;
+            }
+            
+            /* 학생 정보 최적화 - 크기 더욱 증가 */
+            .student-info {
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                padding: 25px 25px !important;
+                margin-bottom: 25px !important;
+                border: 2px solid #ddd !important;
+                background: #f8f9fa !important;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .student-info-item {
+                flex: 1 1 24% !important;
+                margin: 0 !important;
+                text-align: center !important;
+            }
+            
+            .student-info-item strong {
+                font-size: 9px !important;
+                display: block !important;
+                margin-bottom: 4px !important;
+                color: #666 !important;
+                font-weight: 600 !important;
+            }
+            
+            .student-info-item span {
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                color: #333 !important;
+            }
+            
+            /* 섹션 헤더 최적화 - 폰트 크기 대폭 증가 */
+            .section-header {
+                margin: 20px 0 12px 0 !important;
+                padding-bottom: 6px !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                break-after: avoid !important;
+                break-inside: avoid !important;
+            }
+            
+            .section-header h2 {
+                font-size: 16px !important;
+                font-weight: 700 !important;
+                color: #1e3c72 !important;
+                margin: 0 !important;
+                page-break-after: avoid !important;
+            }
+            
+            .section-header::after {
+                background-color: #dc3545 !important;
+                width: 30px !important;
+                height: 2px !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* 레이더 차트 컨테이너 - 크기 증가 */
+            .radar-chart-container {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                height: 350px !important;
+                padding: 12px !important;
+                margin-bottom: 15px !important;
+                border: 1px solid #e9ecef !important;
+                background: white !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+            }
+            
+            /* 점수 테이블 - 폰트 크기 대폭 증가 */
+            .scale-data-table {
+                width: 100% !important;
+                font-size: 12px !important;
+                margin-bottom: 20px !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                background: white !important;
+                border-collapse: collapse !important;
+                border: 1px solid #333 !important;
+            }
+            
+            .scale-data-table th {
+                background-color: #1e3c72 !important;
+                color: white !important;
+                padding: 12px 6px !important;
+                font-size: 11px !important;
+                font-weight: 700 !important;
+                text-align: center !important;
+                border: 1px solid #333 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .scale-data-table td {
+                padding: 10px 6px !important;
+                font-size: 12px !important;
+                font-weight: 600 !important;
+                text-align: center !important;
+                border: 1px solid #333 !important;
+                background: white !important;
+            }
+            
+            .scale-data-table tbody tr:nth-child(even) {
+                background-color: #f8f8f8 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* 정규분포 차트 그리드 - 크기 증가 */
+            .normal-dist-charts {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 8px !important;
+                margin-bottom: 15px !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            
+            .normal-chart-container {
+                height: 160px !important;
+                padding: 8px !important;
+                border: 1px solid #e9ecef !important;
+                background: white !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            
+            /* 사분면 차트 컨테이너 */
+            .chart-container {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                margin-bottom: 12px !important;
+                padding: 8px !important;
+                border: 1px solid #e9ecef !important;
+                background: white !important;
+                min-height: 320px !important;
+            }
+            
+            /* 사분면 분석 데이터 테이블 - 폰트 크기 대폭 증가 */
+            #quadrantAnalysisData {
+                background: #f8f9fa !important;
+                border: 1px solid #ddd !important;
+                border-radius: 4px !important;
+                padding: 12px !important;
+                margin-bottom: 15px !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                page-break-inside: avoid !important;
+            }
+            
+            #quadrantAnalysisData table {
+                width: 100% !important;
+                font-size: 10px !important;
+                border-collapse: collapse !important;
+            }
+            
+            #quadrantAnalysisData th,
+            #quadrantAnalysisData td {
+                padding: 6px !important;
+                font-size: 10px !important;
+                font-weight: 600 !important;
+                border: 1px solid #333 !important;
+                text-align: center !important;
+            }
+            
+            #quadrantAnalysisData th {
+                background-color: #1e3c72 !important;
+                color: white !important;
+                font-size: 11px !important;
+                font-weight: 700 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* 추천 컨테이너 */
+            .recommendation-container, 
+            .strategy-container {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                padding: 10px !important;
+                margin-bottom: 15px !important;
+                border: 1px solid #e9ecef !important;
+                background: white !important;
+                border-radius: 4px !important;
+            }
+            
+            .recommendation-details {
+                padding: 12px !important;
+                margin-top: 12px !important;
+                background: #f8f9fa !important;
+                border-left: 3px solid #1e3c72 !important;
+                border-radius: 2px !important;
+                font-size: 10px !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .recommendation-details h3 {
+                font-size: 13px !important;
+                margin-bottom: 8px !important;
+                color: #1e3c72 !important;
+                font-weight: 700 !important;
+            }
+            
+            .recommendation-list li {
+                padding: 4px 0 !important;
+                font-size: 10px !important;
+                line-height: 1.4 !important;
+                font-weight: 600 !important;
+            }
+            
+            .strategy-detail {
+                padding: 12px !important;
+                margin-bottom: 8px !important;
+                background: #f8f9fa !important;
+                border-left: 3px solid #dc3545 !important;
+                border-radius: 2px !important;
+                font-size: 10px !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .strategy-detail h3 {
+                font-size: 13px !important;
+                margin-bottom: 6px !important;
+                color: #dc3545 !important;
+                font-weight: 700 !important;
+            }
+            
+            .strategy-detail p {
+                font-size: 10px !important;
+                line-height: 1.4 !important;
+                margin: 0 !important;
+                font-weight: 600 !important;
+            }
+            
+            /* 스펙트럼 컨테이너 */
+            .spectrum-container {
+                padding: 10px !important;
+                background: #f8f9fa !important;
+                border-left: 3px solid #28a745 !important;
+                border-radius: 2px !important;
+                margin-top: 8px !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .spectrum-container h3 {
+                font-size: 13px !important;
+                color: #28a745 !important;
+                margin-bottom: 8px !important;
+                font-weight: 600 !important;
+            }
+            
+            .spectrum-item {
+                margin-bottom: 8px !important;
+            }
+            
+            .spectrum-bar {
+                height: 16px !important;
+                background: linear-gradient(to right, #1e3c72, #f8f9fa) !important;
+                border: 1px solid #ddd !important;
+                border-radius: 2px !important;
+                position: relative !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .spectrum-arrow {
+                top: -12px !important;
+                transform: translateX(-50%) !important;
+                position: absolute !important;
+            }
+            
+            .spectrum-arrow-icon {
+                font-size: 10px !important;
+                color: #dc3545 !important;
+            }
+            
+            .spectrum-arrow-text {
+                font-size: 10px !important;
+                color: #dc3545 !important;
+                font-weight: 600 !important;
+            }
+            
+            .spectrum-labels {
+                display: flex !important;
+                justify-content: space-between !important;
+                margin-top: 4px !important;
+            }
+            
+            .spectrum-labels div {
+                font-size: 10px !important;
+                font-weight: 600 !important;
+                color: #333 !important;
+            }
+            
+            .spectrum-description {
+                font-size: 10px !important;
+                line-height: 1.2 !important;
+                margin-top: 4px !important;
+                color: #666 !important;
+            }
+            
+            .footer-note {
+                font-size: 6px !important;
+                padding: 5px !important;
+                background: #e9ecef !important;
+                text-align: center !important;
+                border-radius: 2px !important;
+                margin-top: 8px !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* 페이지 브레이크 최적화 */
+            .section-header:first-of-type {
+                page-break-before: avoid !important;
+                break-before: avoid !important;
+            }
+            
+            .section-header {
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                break-after: avoid !important;
+                break-inside: avoid !important;
+            }
+            
+            /* 섹션과 다음 컨테이너 사이 페이지 브레이크 방지 */
+            .section-header + .radar-chart-container,
+            .section-header + .chart-container,
+            .section-header + .normal-dist-charts,
+            .section-header + .scale-data-table,
+            .section-header + .recommendation-container,
+            .section-header + .strategy-container {
+                page-break-before: avoid !important;
+                break-before: avoid !important;
+            }
+            
+            /* 첫 페이지에 1, 2, 3번 섹션 모두 포함하도록 최적화 */
+            .section-header:nth-of-type(1),
+            .section-header:nth-of-type(2),
+            .section-header:nth-of-type(3) {
+                page-break-before: avoid !important;
+                break-before: avoid !important;
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+            }
+            
+            /* 1, 2, 3번 섹션 다음 컨텐츠들도 페이지 브레이크 방지 */
+            .section-header:nth-of-type(1) + .radar-chart-container,
+            .section-header:nth-of-type(2) + .scale-data-table,
+            .section-header:nth-of-type(3) + .normal-dist-charts {
+                page-break-before: avoid !important;
+                break-before: avoid !important;
+            }
+            
+            /* 4번 섹션부터 새 페이지에서 시작 */
+            .section-header:nth-of-type(4) {
+                page-break-before: page !important;
+                break-before: page !important;
+            }
+            
+            .section-header:nth-of-type(6),
+            .section-header:nth-of-type(7) {
+                page-break-before: page !important;
+                break-before: page !important;
+            }
+            
+            /* Canvas 차트 크기 조정 */
+            canvas {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <!-- 로딩 및 에러 메시지 -->
+        <div id="loading">데이터를 불러오는 중...</div>
+        <div id="error" style="display: none;"></div>
+        
+        <div id="report-content" style="display: none;">
+            <!-- 헤더 영역 -->
+            <div class="report-header">
+                <div class="report-title">SSL 고교선택적성검사</div>
+                <div class="report-subtitle">종합 진단 리포트</div>
+            </div>
+            
+            <!-- 컨트롤 섹션 -->
+            <div class="control-section">
+                <a href="index.html" class="back-button">
+                    ← 목록으로 돌아가기
+                </a>
+                <button class="pdf-button" onclick="downloadPDF()">
+                    📄 PDF 다운로드
+                </button>
+            </div>
+            
+            <!-- 메인 컨텐츠 -->
+            <div class="report-content">
+                <!-- 학생 정보 섹션 -->
+                <div class="student-info">
+                    <div class="student-info-item">
+                        <strong>학생 코드:</strong> <span id="studentId"></span>
+                    </div>
+                    <div class="student-info-item">
+                        <strong>학생명:</strong> <span id="studentName"></span>
+                    </div>
+                    <div class="student-info-item">
+                        <strong>출신학교:</strong> <span id="studentSchool"></span>
+                    </div>
+                    <div class="student-info-item">
+                        <strong>검사일:</strong> <span id="testDate"></span>
+                    </div>
+                </div>
+                
+                <!-- 1. 고교적성 6척도 절대점수 프로파일 -->
+                <div class="section-header">
+                    <h2>1. 고교선택적성 6척도 결과</h2>
+                </div>
+                <div class="radar-chart-container">
+                    <canvas id="radarChart"></canvas>
+                </div>
+                
+                <!-- 2. 고교적성 6척도 점수 요약 -->
+                <div class="section-header">
+                    <h2>2. 고교선택적성 6척도 점수</h2>
+                </div>
+                <table class="scale-data-table">
+                    <thead>
+                        <tr>
+                            <th>척도</th>
+                            <th>총점</th>
+                            <th>평균점수<br>(5점 만점)</th>
+                            <th>Z점수</th>
+                            <th>백분위</th>
+                            <th>상위</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scaleTableBody">
+                        <!-- 동적으로 채워짐 -->
+                    </tbody>
+                </table>
+                
+                <!-- 3. 고교적성 6척도 상대점수 -->
+                <div class="section-header">
+                    <h2>3. 고교선택적성 6척도 상대점수</h2>
+                </div>
+                <div class="normal-dist-charts">
+                    <div class="normal-chart-container">
+                        <canvas id="selfRegulationChart"></canvas>
+                    </div>
+                    <div class="normal-chart-container">
+                        <canvas id="extracurricularChart"></canvas>
+                    </div>
+                    <div class="normal-chart-container">
+                        <canvas id="internalAcademicChart"></canvas>
+                    </div>
+                    <div class="normal-chart-container">
+                        <canvas id="languageProcessingChart"></canvas>
+                    </div>
+                    <div class="normal-chart-container">
+                        <canvas id="engineeringThinkingChart"></canvas>
+                    </div>
+                    <div class="normal-chart-container">
+                        <canvas id="medicalAptitudeChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 4. 입시성향분석 -->
+                <div class="section-header">
+                    <h2>4. 입시성향분석</h2>
+                </div>
+                <div class="chart-container" style="height: 700px; padding-bottom: 200px; margin-bottom: 100px;">
+                    <!-- 분석 결과 수치 표시 -->
+                    <div id="quadrantAnalysisData" style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; width: 90%; margin-left: auto; margin-right: auto;">
+                        <table class="scale-data-table" style="margin-bottom: 0;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left; width: 25%;">구분</th>
+                                    <th style="text-align: center; width: 25%;">좌표값</th>
+                                    <th style="text-align: center; width: 25%;">백분위</th>
+                                    <th style="text-align: center; width: 25%;">해석</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="text-align: left; font-weight: 600;">교과형(-) ↔ 종합형(+)</td>
+                                    <td id="xCoordValue" style="text-align: center;">-</td>
+                                    <td id="xPercentileValue" style="text-align: center;">-</td>
+                                    <td id="xInterpretation" style="text-align: center;">-</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: left; font-weight: 600;">면접형(-) ↔ 서류형(+)</td>
+                                    <td id="yCoordValue" style="text-align: center;">-</td>
+                                    <td id="yPercentileValue" style="text-align: center;">-</td>
+                                    <td id="yInterpretation" style="text-align: center;">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <canvas id="quadrantChart" style="margin-bottom: 30px;"></canvas>
+                </div>
+                
+                <!-- 5. 학업성취도 분석 -->
+                <div class="section-header">
+                    <h2>5. 학업성취도 분석</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="academicChart"></canvas>
+                </div>
+                
+                <!-- 6. 고교 추천 결과 -->
+                <div class="section-header">
+                    <h2>6. 진학고교추천</h2>
+                </div>
+                <div class="recommendation-container">
+            <table class="scale-data-table" id="recommendationTable">
+                <thead>
+                    <tr>
+                        <th>지망</th>
+                        <th>추천 고등학교</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1지망</strong></td>
+                        <td id="firstChoice">분석 중...</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2지망</strong></td>
+                        <td id="secondChoice">분석 중...</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- 추가 평가 정보 -->
+            <div style="margin-top: 25px; padding: 15px; background-color: #f9f9f9; border-radius: 8px;">
+                <h3 style="font-size: 16px; margin-bottom: 15px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 8px;">추천 근거</h3>
+                <ul style="list-style-type: none; padding: 0; margin: 0;">
+                    <li style="padding: 8px 0; border-bottom: 1px dotted #eee;">
+                        <strong>합격가능성 평가:</strong> <span id="admissionPossibility">분석 중...</span>
+                    </li>
+                    <li style="padding: 8px 0; border-bottom: 1px dotted #eee;">
+                        <strong>학업성취도 평가:</strong> <span id="academicEvaluation">분석 중...</span>
+                    </li>
+                    <li style="padding: 8px 0;">
+                        <strong>대입전형 평가:</strong> <span id="admissionTypeEvaluation">분석 중...</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <p style="margin-top: 15px; color: #666; font-size: 14px; text-align: center;">
+                * 이 추천 결과는 학생의 적성과 학업 성취도를 바탕으로 한 참고용 정보입니다.
+            </p>
+        </div>
+        
+                <!-- 7. 대입전략 수립 -->
+                <div class="section-header">
+                    <h2>7. 대입계열추천 및 전략</h2>
+                </div>
+                <div class="strategy-container">
+                    <table class="scale-data-table" id="strategyTable">
+                        <thead>
+                            <tr>
+                                <th>순위</th>
+                                <th>추천 계열</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1순위</strong></td>
+                                <td id="firstStrategy">분석 중...</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2순위</strong></td>
+                                <td id="secondStrategy">분석 중...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <!-- 추천 근거 설명 -->
+                    <div class="recommendation-details">
+                        <h3>계열 추천 근거</h3>
+                        <ul class="recommendation-list">
+                            <li>
+                                <strong>언어정보처리능력:</strong> <span id="languageScoreDetail">분석 중...</span>
+                            </li>
+                            <li>
+                                <strong>공학적사고력:</strong> <span id="engineeringScoreDetail">분석 중...</span>
+                            </li>
+                            <li>
+                                <strong>의약학적성:</strong> <span id="medicalScoreDetail">분석 중...</span>
+                            </li>
+                        </ul>
+                        
+                        <div style="margin-top: 15px; padding: 15px; background-color: #ffffff; border-radius: 6px; border: 1px solid #e9ecef;">
+                            <p id="recommendationExplanationDetail" style="margin: 0 0 10px 0; line-height: 1.6; color: #2c3e50;">분석 중...</p>
+                            <p id="potentialMessageDetail" style="margin: 0; font-style: italic; color: #6c757d; font-size: 13px;">분석 중...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 대입전략 상세 내용 -->
+                    <div style="margin-top: 25px;">
+                        <div class="strategy-detail">
+                            <h3>교과전형 대비 전략</h3>
+                            <p id="subjectStrategyDetail">분석 중...</p>
+                        </div>
+                        <div class="strategy-detail">
+                            <h3>학생부종합전형 대비 전략</h3>
+                            <p id="comprehensiveStrategyDetail">분석 중...</p>
+                        </div>
+                        
+                        <!-- 학생부 관리 스펙트럼 -->
+                        <div class="spectrum-container">
+                            <h3 style="font-size: 16px; margin: 0 0 20px 0; color: #28a745; font-weight: 600;">학생부 관리 스펙트럼</h3>
+                            
+                            <!-- 첫 번째 스펙트럼 바 -->
+                            <div class="spectrum-item">
+                                <div class="spectrum-bar">
+                                    <div id="spectrum1Arrow" class="spectrum-arrow">
+                                        <div class="spectrum-arrow-icon">↓</div>
+                                        <div class="spectrum-arrow-text">현재위치</div>
+                                    </div>
+                                </div>
+                                <div class="spectrum-labels">
+                                    <div>활동의 확장성 및 심화탐구능력(A)</div>
+                                    <div>활동의 안정성 및 교과 내 탐구능력(B)</div>
+                                </div>
+                                <p class="spectrum-description">
+                                    활동의 확장성 및 심화탐구능력이 높을수록, 진로역량 배점을 높일 수 있는 발표, 보고서 활동을 추천합니다. 반면, 활동의 안정성 및 교과 내 탐구능력이 높을수록 교과 내 개념을 충실히 기입하는 활동이 주가 됩니다.
+                                </p>
+                            </div>
+                            
+                            <!-- 두 번째 스펙트럼 바 -->
+                            <div class="spectrum-item">
+                                <div class="spectrum-bar">
+                                    <div id="spectrum2Arrow" class="spectrum-arrow">
+                                        <div class="spectrum-arrow-icon">↓</div>
+                                        <div class="spectrum-arrow-text">현재위치</div>
+                                    </div>
+                                </div>
+                                <div class="spectrum-labels">
+                                    <div>수행평가 및 <u>비</u>교과 활동 중요성</div>
+                                    <div>교과성취도 및 이수과목의 중요성</div>
+                                </div>
+                                <p class="spectrum-description">
+                                    수행평가 및 비교과 활동 중요성이 높을수록 교과보다 종합전형에 적합한 학생이며 수행활동에 적극적 태도가 필요합니다. 반면, 교과성취도 및 이수과목 중요성이 높을수록 교과형, 추천형에 적합하며 GPA 중심 학습전략이 효과적입니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-note">
+                        이 대입전략은 학생의 고교적성과 입시성향, 학업 성취도를 바탕으로 한 참고용 정보입니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    <script src="js/ssl-dataProcessor.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/highSchoolRecommendation.js"></script>
+    <script src="js/universityStrategy.js"></script>
+    <script>
+        // 기본 설정
+        Chart.register(ChartDataLabels);
+        
+        // URL 파라미터 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        const userCode = urlParams.get('userCode');
+        const userName = urlParams.get('userName');
+        
+        // DOM 요소
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+        const reportContentDiv = document.getElementById('report-content');
+        
+        // 메인 코드
+        if (!userCode) {
+            window.location.href = 'index.html';
+        } else {
+            // 데이터 로드 시작 시 로딩 표시
+            loadingDiv.style.display = 'block';
+            reportContentDiv.style.display = 'none';
+            
+            // ssl-dataProcessor.js의 getStudentData 함수 사용
+            getStudentData(userCode, userName)
+                .then(studentData => {
+                    console.log('✅ 학생 데이터 로드 완료:', studentData);
+                    
+                    // 학생 기본 정보 표시
+                    document.getElementById('studentId').textContent = studentData.id;
+                    document.getElementById('studentName').textContent = studentData.name;
+                    document.getElementById('studentSchool').textContent = studentData.school;
+                    document.getElementById('testDate').textContent = studentData.testDate;
+                    // document.getElementById('bGradeCount').textContent = studentData.bGradeCount; // B등급과목수 삭제
+                    
+                    // UI 업데이트
+                    loadingDiv.style.display = 'none';
+                    reportContentDiv.style.display = 'block';
+                    
+                    // 차트 생성 (charts.js의 함수들 사용)
+                    createRadarChart(studentData);
+                    createNormalDistCharts(studentData);
+                    updateScaleTable(studentData);
+                    createQuadrantChart(studentData);
+                    createAcademicChart(studentData);
+                    
+                    // 고교 추천 결과 처리
+                    const recommendations = getHighSchoolRecommendations(studentData);
+                    const firstChoice = document.getElementById('firstChoice');
+                    const secondChoice = document.getElementById('secondChoice');
+                    
+                    firstChoice.textContent = recommendations[1] || '조건에 맞는 추천 없음';
+                    secondChoice.textContent = recommendations[2] || '조건에 맞는 추천 없음';
+                    
+                    // 추천 학교 텍스트 스타일 적용
+                    firstChoice.style.fontWeight = 'bold';
+                    firstChoice.style.fontSize = '1.1em';
+                    secondChoice.style.fontWeight = 'bold';
+                    secondChoice.style.fontSize = '1.1em';
+                    
+                    // 추가 평가 정보 채우기
+                    const evaluationData = getAdmissionEvaluation(studentData);
+                    document.getElementById('admissionPossibility').textContent = evaluationData.admissionPossibility;
+                    document.getElementById('academicEvaluation').textContent = evaluationData.academicEvaluation;
+                    document.getElementById('admissionTypeEvaluation').textContent = evaluationData.admissionTypeEvaluation;
+                    
+                    // 대입전략 결과 처리
+                    const strategies = getUniversityStrategies(studentData);
+                    const firstStrategy = document.getElementById('firstStrategy');
+                    const secondStrategy = document.getElementById('secondStrategy');
+                    
+                    firstStrategy.textContent = strategies[1] || '조건에 맞는 추천 없음';
+                    secondStrategy.textContent = strategies[2] || '조건에 맞는 추천 없음';
+                    
+                    // 전략 텍스트 스타일 적용
+                    firstStrategy.style.fontWeight = 'bold';
+                    firstStrategy.style.fontSize = '1.1em';
+                    secondStrategy.style.fontWeight = 'bold';
+                    secondStrategy.style.fontSize = '1.1em';
+                    
+                    // 계열 추천 근거 및 설명
+                    const strategyExplanation = getStrategyExplanation(studentData);
+                    document.getElementById('languageScoreDetail').textContent = strategyExplanation.languageScore;
+                    document.getElementById('engineeringScoreDetail').textContent = strategyExplanation.engineeringScore;
+                    document.getElementById('medicalScoreDetail').textContent = strategyExplanation.medicalScore;
+                    document.getElementById('recommendationExplanationDetail').innerHTML = strategyExplanation.recommendationExplanation;
+                    document.getElementById('potentialMessageDetail').innerHTML = strategyExplanation.potentialMessage;
+                    
+                    // 대입전형 전략 상세 내용
+                    const detailedStrategy = getDetailedStrategy(studentData);
+                    document.getElementById('subjectStrategyDetail').textContent = detailedStrategy.subjectStrategy;
+                    document.getElementById('comprehensiveStrategyDetail').textContent = detailedStrategy.comprehensiveStrategy;
+                    
+                    // 학생부 관리 스펙트럼 화살표 위치 설정
+                    const spectrumPosition = getStudentSpectrumPosition(studentData);
+                    
+                    const spectrum1Arrow = document.getElementById('spectrum1Arrow');
+                    const spectrum2Arrow = document.getElementById('spectrum2Arrow');
+                    
+                    // 첫 번째 스펙트럼 위치 (0~100을 0~100%로 변환)
+                    spectrum1Arrow.style.left = `${spectrumPosition.spectrum1Position}%`;
+                    
+                    // 두 번째 스펙트럼 위치
+                    spectrum2Arrow.style.left = `${spectrumPosition.spectrum2Position}%`;
+                    
+                    console.log('📊 모든 차트 생성 완료');
+                    console.log('🏫 고교 추천 완료');
+                    console.log('🎓 대입전략 완료');
+                })
+                .catch(error => {
+                    loadingDiv.style.display = 'none';
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerText = error.message || '학생 정보를 찾을 수 없습니다.';
+                    console.error('❌ 데이터 로드 오류:', error);
+                });
+        }
+        
+        // PDF 다운로드 함수
+        function downloadPDF() {
+            const studentName = document.getElementById('studentName').textContent || '학생';
+            const studentId = document.getElementById('studentId').textContent || 'UNKNOWN';
+            
+            // 컨트롤 섹션 임시 숨기기
+            const controlSection = document.querySelector('.control-section');
+            const originalDisplay = controlSection.style.display;
+            controlSection.style.display = 'none';
+            
+            // 로딩 표시
+            const pdfButton = document.querySelector('.pdf-button');
+            const originalButtonText = pdfButton.innerHTML;
+            pdfButton.innerHTML = '📄 PDF 생성중...';
+            pdfButton.disabled = true;
+            
+            // 잠시 대기 후 PDF 생성 (차트 렌더링 완료 대기)
+            setTimeout(() => {
+                window.print();
+                
+                // 원상복구
+                controlSection.style.display = originalDisplay;
+                pdfButton.innerHTML = originalButtonText;
+                pdfButton.disabled = false;
+            }, 500);
+        }
+    </script>
+</body>
+</html>

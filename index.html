@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSL 고교선택적성검사 시스템</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 영역 -->
+        <header class="main-header">
+            <div class="header-content">
+                <h1 class="header-title">SSL 고교선택적성검사 시스템</h1>
+                <p class="header-subtitle">SSL Academic Aptitude Test System</p>
+            </div>
+        </header>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <!-- 검색 섹션 -->
+            <div class="search-section">
+                <h2 class="section-title">학생 리포트 조회</h2>
+                
+                <div class="search-form-container">
+                    <div class="form-group">
+                        <label for="surveyType" class="form-label">검사 종류 (Survey Type)</label>
+                        <select id="surveyType" class="form-select">
+                            <option value="고교선택적성검사" selected>고교선택적성검사</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userName" class="form-label">이름 (Name)</label>
+                        <input 
+                            type="text" 
+                            id="userName" 
+                            class="form-input"
+                            placeholder="이름을 입력하세요"
+                            maxlength="20"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userCode" class="form-label">코드 (Code)</label>
+                        <input 
+                            type="text" 
+                            id="userCode" 
+                            class="form-input"
+                            placeholder="부여받은 코드를 입력하세요"
+                            maxlength="20"
+                        >
+                    </div>
+                    
+                    <button id="searchButton" class="search-button">
+                        로그인
+                    </button>
+                    
+                    <p class="form-note">
+                        부여받은 이름과 코드를 정확히 입력해주세요.
+                    </p>
+                </div>
+
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+                <div id="loadingMessage" class="loading-message" style="display: none;">
+                    데이터를 불러오는 중...
+                </div>
+            </div>
+
+            <!-- 학생 목록 섹션 -->
+            <div class="student-list-section">
+                <div class="section-header">
+                    <h2 class="section-title">등록된 학생 목록</h2>
+                </div>
+                
+                <div class="table-container">
+                    <table class="student-table" id="studentTable">
+                        <thead>
+                            <tr>
+                                <th>번호</th>
+                                <th>코드</th>
+                                <th>이름</th>
+                                <th>학교</th>
+                                <th>학년</th>
+                                <th>리포트</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentList">
+                            <tr>
+                                <td colspan="6" class="loading-placeholder">학생 목록을 불러오는 중...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- 푸터 -->
+        <footer class="main-footer">
+            <p>&copy; 2025 SSL 고교선택적성검사. All rights reserved.</p>
+            <p class="footer-version">Version 2.0 | MySQL Database Connected</p>
+        </footer>
+    </div>
+
+    <script src="js/ssl-dataProcessor.js"></script>
+    <script>
+        // DOM 로드 완료 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 SSL Report System 시작');
+            
+            // 요소들 가져오기
+            const userCodeInput = document.getElementById('userCode');
+            const userNameInput = document.getElementById('userName');
+            const searchButton = document.getElementById('searchButton');
+            const errorMessage = document.getElementById('errorMessage');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const studentList = document.getElementById('studentList');
+
+            // 검색 버튼 클릭 이벤트
+            searchButton.addEventListener('click', handleSearch);
+            
+            // Enter 키 이벤트
+            userCodeInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') handleSearch();
+            });
+            userNameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') handleSearch();
+            });
+
+            // 검색 처리 함수
+            async function handleSearch() {
+                const userCode = userCodeInput.value.trim();
+                const userName = userNameInput.value.trim();
+
+                // 입력 검증
+                if (!userCode) {
+                    showError('코드를 입력해주세요.');
+                    return;
+                }
+
+                if (!userName) {
+                    showError('이름을 입력해주세요.');
+                    return;
+                }
+
+                try {
+                    showLoading(true);
+                    hideError();
+
+                    // 학생 데이터 존재 여부 확인
+                    const response = await fetch(`/api/student/${userCode}`);
+                    
+                    if (response.ok) {
+                        const studentData = await response.json();
+                        
+                        // 이름 검증
+                        if (studentData.user_name !== userName) {
+                            showError(`입력한 이름(${userName})과 등록된 이름(${studentData.user_name})이 일치하지 않습니다.`);
+                            return;
+                        }
+                        
+                        // 리포트 페이지로 이동
+                        const params = new URLSearchParams({
+                            userCode: userCode,
+                            userName: studentData.user_name
+                        });
+                        
+                        window.location.href = `student_report.html?${params.toString()}`;
+                        
+                    } else if (response.status === 404) {
+                        showError('해당 코드를 찾을 수 없습니다. 코드를 확인해주세요.');
+                    } else {
+                        throw new Error(`서버 오류: ${response.status}`);
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ 검색 오류:', error);
+                    showError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            // 학생 목록 로드
+            async function loadStudentList() {
+                try {
+                    const students = await getStudentList();
+                    displayStudentList(students);
+                } catch (error) {
+                    console.error('❌ 학생 목록 로드 실패:', error);
+                    studentList.innerHTML = '<div class="error-placeholder">학생 목록을 불러올 수 없습니다.</div>';
+                }
+            }
+
+            // 학생 목록 표시
+            function displayStudentList(students) {
+                if (students.length === 0) {
+                    studentList.innerHTML = '<tr><td colspan="6" class="empty-placeholder">등록된 학생이 없습니다.</td></tr>';
+                    return;
+                }
+
+                studentList.innerHTML = students.map((student, index) => `
+                    <tr data-user-code="${student.user_code}">
+                        <td>${index + 1}</td>
+                        <td>${student.user_code}</td>
+                        <td>${student.user_name}</td>
+                        <td>${student.school || '정보없음'}</td>
+                        <td>${student.grade ? student.grade + '학년' : '정보없음'}</td>
+                        <td>
+                            <button class="table-report-btn" onclick="viewReport('${student.user_code}', '${student.user_name}')">
+                                📋 리포트 보기
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // 리포트 보기 (전역 함수)
+            window.viewReport = function(userCode, userName) {
+                const params = new URLSearchParams({
+                    userCode: userCode,
+                    userName: userName
+                });
+                window.location.href = `student_report.html?${params.toString()}`;
+            };
+
+            // UI 헬퍼 함수들
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                setTimeout(() => {
+                    hideError();
+                }, 5000);
+            }
+
+            function hideError() {
+                errorMessage.style.display = 'none';
+            }
+
+            function showLoading(show) {
+                loadingMessage.style.display = show ? 'block' : 'none';
+                searchButton.disabled = show;
+                if (show) {
+                    searchButton.textContent = '로그인 중...';
+                } else {
+                    searchButton.textContent = '로그인';
+                }
+            }
+
+            // 초기 학생 목록 로드
+            loadStudentList();
+        });
+    </script>
+</body>
+</html>
